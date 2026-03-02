@@ -1,7 +1,42 @@
 const ADMIN_PASSWORD = 'minami-try&act';
+const FALLBACK_STORAGE_KEY = 'video_comments_fallback';
+
+function getApiBase() {
+  if (window.COMMENTS_API_BASE) {
+    return String(window.COMMENTS_API_BASE).replace(/\/$/, '');
+  }
+  const meta = document.querySelector('meta[name="comments-api-base"]');
+  if (!meta || !meta.content) return '';
+  return String(meta.content).trim().replace(/\/$/, '');
+}
+
+function buildApiUrl(path) {
+  const base = getApiBase();
+  return base ? base + path : path;
+}
+
+function getFallbackComments() {
+  try {
+    const comments = JSON.parse(localStorage.getItem(FALLBACK_STORAGE_KEY) || '[]');
+    return Array.isArray(comments) ? comments : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveFallbackComment(name, body) {
+  const comments = getFallbackComments();
+  comments.push({
+    name: name,
+    body: body,
+    createdAt: new Date().toISOString(),
+    date: new Date().toLocaleString('ja-JP'),
+  });
+  localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify(comments));
+}
 
 async function fetchComments() {
-  const response = await fetch('/api/comments', {
+  const response = await fetch(buildApiUrl('/api/comments'), {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -14,7 +49,7 @@ async function fetchComments() {
 }
 
 async function postComment(payload) {
-  const response = await fetch('/api/comments', {
+  const response = await fetch(buildApiUrl('/api/comments'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -172,7 +207,9 @@ function formatCommentDate(comment) {
         statusEl.textContent = '';
       }, 4000);
     } catch (error) {
-      statusEl.textContent = '送信に失敗しました。しばらくしてから再度お試しください。';
+      saveFallbackComment(name, body);
+      form.reset();
+      statusEl.textContent = '共有サーバーに接続できなかったため、この端末内に保存しました。';
     } finally {
       if (submitButton) submitButton.disabled = false;
     }
@@ -195,6 +232,9 @@ function formatCommentDate(comment) {
     loginSection.style.display = 'none';
     commentsSection.style.display = 'block';
     renderComments();
+    if (refreshIntervalId) {
+      clearInterval(refreshIntervalId);
+    }
     refreshIntervalId = window.setInterval(renderComments, 5000);
   }
 
@@ -219,7 +259,26 @@ function formatCommentDate(comment) {
         })
         .join('');
     } catch (error) {
-      commentsList.innerHTML = '<p class="no-comments">感想の取得に失敗しました。</p>';
+      const localComments = getFallbackComments();
+      if (localComments.length === 0) {
+        commentsList.innerHTML = '<p class="no-comments">感想の取得に失敗しました。</p>';
+        return;
+      }
+      commentsList.innerHTML =
+        '<p class="no-comments">共有サーバーに接続できないため、この端末内の感想のみ表示しています。</p>' +
+        localComments
+          .slice()
+          .reverse()
+          .map(function (c) {
+            return (
+              '<div class="comment-card">' +
+              '<div class="comment-name">' + escapeHtml(c.name) + '</div>' +
+              '<div class="comment-date">' + escapeHtml(formatCommentDate(c)) + '</div>' +
+              '<div class="comment-body">' + escapeHtml(c.body) + '</div>' +
+              '</div>'
+            );
+          })
+          .join('');
     }
   }
 

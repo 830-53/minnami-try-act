@@ -8,6 +8,15 @@ const DATA_DIR = path.join(__dirname, 'data');
 const COMMENTS_FILE = path.join(DATA_DIR, 'comments.json');
 
 app.use(express.json({ limit: '1mb' }));
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 async function ensureCommentsFile() {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -82,6 +91,6 @@ app.post('/api/comments', async (req, res) => {
 
 app.use(express.static(__dirname));
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
