@@ -1,5 +1,48 @@
 const ADMIN_PASSWORD = 'minami-try&act';
 
+async function fetchComments() {
+  const response = await fetch('/api/comments', {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+  if (!response.ok) {
+    throw new Error('コメント取得エラー');
+  }
+  return response.json();
+}
+
+async function postComment(payload) {
+  const response = await fetch('/api/comments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error('コメント送信エラー');
+  }
+  return response.json();
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function formatCommentDate(comment) {
+  if (comment.date) return comment.date;
+  if (!comment.createdAt) return '';
+  return new Date(comment.createdAt).toLocaleString('ja-JP');
+}
+
 // ---- Video Player ----
 (function () {
   const video = document.getElementById('main-video');
@@ -113,25 +156,26 @@ const ADMIN_PASSWORD = 'minami-try&act';
 
   const statusEl = document.getElementById('comment-status');
 
-  form.addEventListener('submit', function (e) {
+  form.addEventListener('submit', async function (e) {
     e.preventDefault();
     const name = document.getElementById('comment-name').value.trim();
     const body = document.getElementById('comment-body').value.trim();
     if (!name || !body) return;
 
-    const comments = JSON.parse(localStorage.getItem('video_comments') || '[]');
-    comments.push({
-      name: name,
-      body: body,
-      date: new Date().toLocaleString('ja-JP'),
-    });
-    localStorage.setItem('video_comments', JSON.stringify(comments));
-
-    form.reset();
-    statusEl.textContent = '感想を送信しました。ありがとうございます！';
-    setTimeout(function () {
-      statusEl.textContent = '';
-    }, 4000);
+    const submitButton = form.querySelector('button[type="submit"]');
+    try {
+      if (submitButton) submitButton.disabled = true;
+      await postComment({ name: name, body: body });
+      form.reset();
+      statusEl.textContent = '感想を送信しました。ありがとうございます！';
+      setTimeout(function () {
+        statusEl.textContent = '';
+      }, 4000);
+    } catch (error) {
+      statusEl.textContent = '送信に失敗しました。しばらくしてから再度お試しください。';
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
   });
 })();
 
@@ -145,41 +189,38 @@ const ADMIN_PASSWORD = 'minami-try&act';
   const loginError = document.getElementById('login-error');
   const commentsList = document.getElementById('comments-list');
   const logoutBtn = document.getElementById('btn-logout');
+  let refreshIntervalId = null;
 
   function showComments() {
     loginSection.style.display = 'none';
     commentsSection.style.display = 'block';
     renderComments();
+    refreshIntervalId = window.setInterval(renderComments, 5000);
   }
 
-  function renderComments() {
-    const comments = JSON.parse(localStorage.getItem('video_comments') || '[]');
-    if (comments.length === 0) {
-      commentsList.innerHTML = '<p class="no-comments">まだ感想はありません。</p>';
-      return;
+  async function renderComments() {
+    try {
+      const comments = await fetchComments();
+      if (comments.length === 0) {
+        commentsList.innerHTML = '<p class="no-comments">まだ感想はありません。</p>';
+        return;
+      }
+      commentsList.innerHTML = comments
+        .slice()
+        .reverse()
+        .map(function (c) {
+          return (
+            '<div class="comment-card">' +
+            '<div class="comment-name">' + escapeHtml(c.name) + '</div>' +
+            '<div class="comment-date">' + escapeHtml(formatCommentDate(c)) + '</div>' +
+            '<div class="comment-body">' + escapeHtml(c.body) + '</div>' +
+            '</div>'
+          );
+        })
+        .join('');
+    } catch (error) {
+      commentsList.innerHTML = '<p class="no-comments">感想の取得に失敗しました。</p>';
     }
-    commentsList.innerHTML = comments
-      .slice()
-      .reverse()
-      .map(function (c) {
-        return (
-          '<div class="comment-card">' +
-          '<div class="comment-name">' + escapeHtml(c.name) + '</div>' +
-          '<div class="comment-date">' + escapeHtml(c.date) + '</div>' +
-          '<div class="comment-body">' + escapeHtml(c.body) + '</div>' +
-          '</div>'
-        );
-      })
-      .join('');
-  }
-
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
   }
 
   loginForm.addEventListener('submit', function (e) {
@@ -198,6 +239,10 @@ const ADMIN_PASSWORD = 'minami-try&act';
       commentsSection.style.display = 'none';
       loginSection.style.display = 'block';
       document.getElementById('admin-password').value = '';
+      if (refreshIntervalId) {
+        clearInterval(refreshIntervalId);
+        refreshIntervalId = null;
+      }
     });
   }
 })();
