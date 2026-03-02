@@ -1,4 +1,3 @@
-const VIEWER_PASSWORD = 'manabitaishi';
 const ADMIN_PASSWORD = 'minami-try&act';
 
 // ---- Video Player ----
@@ -6,37 +5,12 @@ const ADMIN_PASSWORD = 'minami-try&act';
   const video = document.getElementById('main-video');
   if (!video) return;
 
-  const viewerLogin = document.getElementById('viewer-login');
-  const viewerContent = document.getElementById('viewer-content');
-  const viewerLoginForm = document.getElementById('viewer-login-form');
-  const viewerLoginError = document.getElementById('viewer-login-error');
-  const viewerPasswordInput = document.getElementById('viewer-password');
-
   const playPauseBtn = document.getElementById('btn-play-pause');
   const rewindBtn = document.getElementById('btn-rewind');
   const forwardBtn = document.getElementById('btn-forward');
   const progressContainer = document.getElementById('progress-container');
   const progressBar = document.getElementById('progress-bar');
   const timeDisplay = document.getElementById('time-display');
-
-  function unlockViewer() {
-    if (!viewerLogin || !viewerContent) return;
-    viewerLogin.style.display = 'none';
-    viewerContent.style.display = 'block';
-  }
-
-  if (viewerLoginForm && viewerPasswordInput && viewerLoginError) {
-    viewerLoginForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      const pw = viewerPasswordInput.value;
-      if (pw === VIEWER_PASSWORD) {
-        viewerLoginError.textContent = '';
-        unlockViewer();
-      } else {
-        viewerLoginError.textContent = 'パスワードが違います。';
-      }
-    });
-  }
 
   function formatTime(seconds) {
     const m = Math.floor(seconds / 60);
