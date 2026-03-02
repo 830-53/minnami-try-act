@@ -3,20 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="comments-api-base" content="" />
   <title> 1-4 Try&Act 動画サイト</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>🎬 1-4 Try&amp;Act</h1>
-    <a href="admin.html">管理者ページ</a>
+  <header class="index-header">
+    <h1><span class="title-badge">1-4</span> Try&amp;Act</h1>
   </header>
 
   <main>
     <!-- Video Player -->
     <section class="video-section">
-      <h2>動画</h2>
+      <h2>1-4 Try&Act動画</h2>
       <div id="viewer-content">
         <div class="video-wrapper">
           <video id="main-video" preload="metadata">
@@ -36,27 +34,6 @@
       </div>
     </section>
 
-    <!-- Comment Form -->
-    <section class="comment-section">
-      <h2>📝 感想を書く</h2>
-      <form class="comment-form" id="comment-form">
-        <input
-          type="text"
-          id="comment-name"
-          placeholder="お名前(ニックネーム可)（必須）"
-          maxlength="50"
-          required
-        />
-        <textarea
-          id="comment-body"
-          placeholder="動画の感想をお書きください（必須）"
-          maxlength="1000"
-          required
-        ></textarea>
-        <button type="submit" class="btn btn-primary">送信する</button>
-        <p id="comment-status"></p>
-      </form>
-    </section>
   </main>
 
   <script src="script.js"></script>
