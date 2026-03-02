@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>みんなみ Try&Act 動画サイト</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎬 みんなみ Try&amp;Act</h1>
+    <a href="admin.html">管理者ページ</a>
+  </header>
+
+  <main>
+    <!-- Video Player -->
+    <section class="video-section">
+      <h2>動画</h2>
+      <div class="video-wrapper">
+        <video id="main-video" preload="metadata">
+          <source src="video.mp4" type="video/mp4" />
+          お使いのブラウザは動画の再生に対応していません。
+        </video>
+      </div>
+      <div class="video-controls">
+        <button class="btn btn-primary" id="btn-play-pause">▶ 再生</button>
+        <button class="btn" id="btn-rewind">⏪ 10秒戻る</button>
+        <button class="btn" id="btn-forward">10秒進む ⏩</button>
+        <div class="progress-bar-container" id="progress-container">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <span class="time-display" id="time-display">00:00 / 00:00</span>
+      </div>
+    </section>
+
+    <!-- Comment Form -->
+    <section class="comment-section">
+      <h2>📝 感想を書く</h2>
+      <form class="comment-form" id="comment-form">
+        <input
+          type="text"
+          id="comment-name"
+          placeholder="お名前（必須）"
+          maxlength="50"
+          required
+        />
+        <textarea
+          id="comment-body"
+          placeholder="動画の感想をお書きください（必須）"
+          maxlength="1000"
+          required
+        ></textarea>
+        <button type="submit" class="btn btn-primary">送信する</button>
+        <p id="comment-status"></p>
+      </form>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
