@@ -16,22 +16,7 @@
     <!-- Video Player -->
     <section class="video-section">
       <h2>動画</h2>
-      <div class="viewer-login" id="viewer-login">
-        <h3>🔒 視聴ログイン</h3>
-        <form id="viewer-login-form">
-          <input
-            type="password"
-            id="viewer-password"
-            placeholder="パスワードを入力"
-            required
-            autocomplete="off"
-          />
-          <button type="submit" class="btn btn-primary">動画を表示</button>
-          <p id="viewer-login-error"></p>
-        </form>
-      </div>
-
-      <div id="viewer-content" style="display:none">
+      <div id="viewer-content">
         <div class="video-wrapper">
           <video id="main-video" preload="metadata">
             <source src="最大圧縮.mp4" type="video/mp4" />
